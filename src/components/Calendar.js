@@ -107,23 +107,26 @@ export class Calendar extends Component {
     }
 
     render() {
+        const { month, monthNamesFull, year } = this.state;
         return (
             <div className="r-calendar">
                 <div className="r-inner">
-
+                    <Header monthNames={onthNamesFull} month={month} year={year} onPrev={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
                 </div>
             </div>
         );
     }
 }
 
-export const Header = ({onNext, onPrevious, monthNames, month}) => {
+export const Header = ({onNext, onPrevious, monthNames, year, month}) => {
     return(
         <div className="r-row r-head">
             <div className="r-cell r-prev">
                 <button className="r-cell r-title" onClick={onNext.bind(this)}></button>
                 <div className="r-cell r-title">
                     {monthNames[month]}
+                    ' ',
+                    {year}
                 </div>
                 <button className="r-cell r-next" onClick={onPrevious.bind(this)}></button>
             </div>
