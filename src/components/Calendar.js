@@ -46,7 +46,7 @@ export class Calendar extends Component {
             if(selectedMonth !== month || selectedYear !== year){
                 selectedElement.classList.remove('r-selected')
             } else {
-                selectedElement.classList.add('r-selected')                
+                selectedElement.classList.add('r-selected')
             }
         }
         return {
@@ -111,7 +111,7 @@ export class Calendar extends Component {
         return (
             <div className="r-calendar">
                 <div className="r-inner">
-                    <Header monthNames={onthNamesFull} month={month} year={year} onPrev={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
+                    <Header monthNames={monthNamesFull} month={month} year={year} onPrev={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
                 </div>
             </div>
         );
