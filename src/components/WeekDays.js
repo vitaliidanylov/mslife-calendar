@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import '../css/styles.css';
 
 export class WeekDays extends Component {
     render() {
@@ -6,8 +7,8 @@ export class WeekDays extends Component {
         const haystack = Array.apply(null, { length: 7 }).map(Number.call, Number);
         return (
             <div className="r-row r-weekdays">
-                {weekNumbers && <div className="r-cell r-weeknum">wn</div> }
-                {haystack.map((item, i) => dayNames[startDay+i]%7)}
+                {weekNumbers && <div className="r-cell r-weeknum">{4}</div> }
+                {haystack.map((item, i) => <div key={item+i} className="r-cell">{dayNames[(startDay+i)%7]}</div>)}
             </div>
         );
     }

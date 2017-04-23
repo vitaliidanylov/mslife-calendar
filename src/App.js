@@ -11,7 +11,9 @@ class App extends Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h2>MasterLife Calendar</h2>
         </div>
-        <Calendar />
+        <div className="calendar-app">
+          <Calendar />
+        </div>
       </div>
     );
   }

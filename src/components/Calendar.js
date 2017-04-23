@@ -1,25 +1,23 @@
 import React, { Component } from 'react';
-import '../css/Calendar.css';
+import { MonthDates } from './MonthDates';
+import { WeekDays } from './WeekDays';
+import '../css/styles.css';
 
 export class Calendar extends Component {
 
     constructor(props){
         super(props);
-        let currentDate = new Date();
+        let d = new Date();
         this.state = {
-            year: currentDate.getFullYear(),
-            month: currentDate.getMonth(),
-            selectedYear: currentDate.getFullYear(),
-            selectedMonth: currentDate.getMonth(),
-            selectedDate: currentDate.getDate(),
-            selectedDt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()),
+            year: d.getFullYear(),
+            month: d.getMonth(),
+            selectedYear: d.getFullYear(),
+            selectedMonth: d.getMonth(),
+            selectedDate: d.getDate(),
+            selectedDt: new Date(d.getFullYear(), d.getMonth(), d.getDate()),
             startDay: 1,
-            weekNumbers: false,
-            minDate: this.props.minDate ? this.props.minDate : null,
-            disablePast: this.props.disablePast ? this.props.disablePast : false,
-            dayNames: ['Niedz', 'Pn', 'Wt', 'Sr', 'Czw', 'Pt', 'Sob'],
-            monthNames: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paż", "Lis", "Gru"],
-            monthNamesFull: ['Styczeń', 'Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
+            deliveryStart: null,
+            deliveryEnd: null,
             firstOfMonth: null,
             daysInMonth: null
         }
@@ -49,14 +47,16 @@ export class Calendar extends Component {
                 selectedElement.classList.add('r-selected')
             }
         }
+        
         return {
             firstOfMonth: new Date(year, month, 1),
-            daysInMonth: new Date(year, month, 1).getDate()
+            daysInMonth: new Date(year, month+1, 0).getDate()
         }
     }
 
     componentWillMount() {
-        this.setState(this.estimateDate.call(null, this.state.year, this.state.month));
+        const { year, month } = this.state;
+        this.setState({...this.estimateDate(year,month)})
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -107,29 +107,51 @@ export class Calendar extends Component {
     }
 
     render() {
-        const { month, monthNamesFull, year } = this.state;
+        const {  dayNames, dayNamesFull, monthNames, monthNamesFull } = this.props;
+        const { month, year, firstOfMonth, daysInMonth, weekNumbers, startDay } = this.state;
         return (
             <div className="r-calendar">
                 <div className="r-inner">
-                    <Header monthNames={monthNamesFull} month={month} year={year} onPrev={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
+                    <CurrentDateHeader dayNamesFull={dayNamesFull} monthNamesFull={monthNamesFull}  />
+                    <Header monthNames={monthNamesFull} month={month} year={year} onPrevious={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
+                    <WeekDays dayNames={dayNames} startDay={startDay} weekNumbers={weekNumbers} />
+                    <MonthDates month={month} year={year} daysInMonth={daysInMonth} firstOfMonth={firstOfMonth} startDay={startDay} onSelect={this.selectDate} weekNumbers={weekNumbers} minDate={this.state.minDate} />
                 </div>
             </div>
         );
     }
 }
 
+Calendar.defaultProps = {
+    dayNames: ['Nz', 'Pn', 'Wt', 'Sr', 'Czw', 'Pt', 'Sob'],
+    dayNamesFull: ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'],
+    monthNames: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paż", "Lis", "Gru"],
+    monthNamesFull: ['Styczeń', 'Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
+}
+
 export const Header = ({onNext, onPrevious, monthNames, year, month}) => {
     return(
         <div className="r-row r-head">
-            <div className="r-cell r-prev">
-                <button className="r-cell r-title" onClick={onNext.bind(this)}></button>
-                <div className="r-cell r-title">
-                    {monthNames[month]}
-                    ' ',
-                    {year}
-                </div>
-                <button className="r-cell r-next" onClick={onPrevious.bind(this)}></button>
+            <button className="r-cell r-prev" onClick={onPrevious.bind(this)} />
+            <div className="r-cell r-title">
+                {monthNames[month]+' '+year}
             </div>
+            <button className="r-cell r-next" onClick={onNext.bind(this)} />
+        </div>
+    )
+}
+
+export const CurrentDateHeader = (props) => {
+    const { dayNamesFull, monthNamesFull } = props;
+    const date = new Date();
+    const currDay = date.getDay();
+    const currDate = date.getDate();
+    const currMonth = date.getMonth();
+    const currYear = date.getFullYear();
+    return(
+        <div>
+            <h3>{dayNamesFull[currDay]}</h3>
+            <h2>{currDate} {monthNamesFull[currMonth]} {currYear}</h2>
         </div>
     )
 }
