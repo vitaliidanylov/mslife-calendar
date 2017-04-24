@@ -1,25 +1,48 @@
 import React, { Component } from 'react';
+import { getDates } from '../utils/utils';
 import '../css/styles.css';
 
 export class MonthDates extends Component {
 
+    constructor(props){
+        super(props)
+        this.addToDeliveryDates = this.props.addToDeliveryDates.bind(this)
+    }
+
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     // console.log(this.props);
+    //     const { deliveryStart, deliveryEnd, year, month } = this.props;
+    //     console.log(deliveryStart, deliveryEnd, year, month);
+    //     // return true;
+    //     if( nextProps.deliveryEnd != deliveryEnd || 
+    //         nextProps.deliveryStart != deliveryStart ||
+    //         nextProps.month != month ||
+    //         nextProps.year != year){                
+    //             if(nextProps.deliveryEnd, deliveryStart){
+    //                 const datesRange = getDates(deliveryStart, nextProps.deliveryEnd);
+    //                 this.addToDeliveryDates(datesRange);
+    //             }
+    //             return true;
+    //     } else {
+    //         return false;
+    //     }
+    // }
+    
+
     render() {
-        const { firstOfMonth, year, daysInMonth, month, disablePast, minDate, today, weekNumbers } = this.props;
+        const { firstOfMonth, year, daysInMonth, month, selectDeliveryDate, deliveryStart, deliveryEnd,  } = this.props;
         let haystack,
             day,
             d,
-            current,
             isDate,
             className,
             weekStack = Array.apply(null, { length: 7 }).map(Number.call, Number),
             startDay = firstOfMonth.getUTCDay(),
             first = firstOfMonth.getDay(),
-            janOne = new Date(year, 0, 1),
+            // janOne = new Date(year, 0, 1),
             rows = 5;
 
-        // console.log('first', firstOfMonth.getDay());
-        // console.log('first', firstOfMonth.getUTCDay());
-        if (startDay == 5 && daysInMonth == 31 || startDay == 6 && daysInMonth > 29) {
+        if (startDay === 5 && daysInMonth === 31 || startDay === 6 && daysInMonth > 29) {
             rows = 6;
         }
         className = rows === 6 ? 'r-dates' : 'r-dates r-fix';
@@ -29,7 +52,6 @@ export class MonthDates extends Component {
             day -= 7;
         }
         day -= startDay;
-
         return (
             <div className={className}>
                 {haystack.map((item,i)=>{
@@ -40,8 +62,14 @@ export class MonthDates extends Component {
                                 d += 1;
                                 isDate = d > 0 && d <= daysInMonth;
                                 if(isDate){
-                                    className = new Date(year, month, d) != today ? 'r-cell r-date':'r-cell r-date r-today'                                   
-                                    return <button key={item+i} className={className}>{d}</button>
+                                    let s;
+                                    if(deliveryEnd && deliveryStart){
+                                        let temp = new Date(year,month,d);
+                                        s = deliveryStart.getTime() <= temp.getTime() && temp.getTime() <= deliveryEnd.getTime()
+                                    } else {
+                                        s = false;
+                                    }
+                                    return <button onClick={selectDeliveryDate.bind(this, d)} key={item+i} className={s ? 'r-cell r-date blue':'r-cell r-date'}>{d}</button>
                                 }
                                 return <button key={item+i} className='r-cell' />
                             })}

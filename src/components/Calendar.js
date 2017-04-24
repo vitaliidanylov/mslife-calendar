@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { MonthDates } from './MonthDates';
 import { WeekDays } from './WeekDays';
+import { getDates } from '../utils/utils';
 import '../css/styles.css';
 
 export class Calendar extends Component {
@@ -13,28 +14,54 @@ export class Calendar extends Component {
             month: d.getMonth(),
             selectedYear: d.getFullYear(),
             selectedMonth: d.getMonth(),
-            selectedDate: d.getDate(),
             selectedDt: new Date(d.getFullYear(), d.getMonth(), d.getDate()),
             startDay: 1,
+            selectedDate: null,
             deliveryStart: null,
             deliveryEnd: null,
+            deliveryRange: null,
             firstOfMonth: null,
             daysInMonth: null
         }
     }
 
-    selectDate = (year, month, date, element) => {
-        const { selectedElement } = this.state;
-        if(selectedElement){
-            selectedElement.classList.remove('r-selected');
-        }
-        element.target.classList.add('r-selected');
+    addToDeliveryDates = (newDates) =>{
+        console.log('BANG!');
         this.setState({
-            selectedYear: year,
-            selectedMonth: month,
-            selectedDate: date,
-            selectedDt: new Date(year, month, date),
-            selectedElement: element.target
+            deliveryRange: newDates
+        })
+    }
+
+    selectDeliveryDate = (value) => {
+        const { deliveryStart, deliveryEnd, year, month } = this.state;
+
+        if(!deliveryStart){
+            this.setState({
+                deliveryStart: new Date(year, month, value),
+            })
+        } else if (deliveryStart){
+            const newDate = new Date(year, month, value);
+            const dates = getDates(newDate, deliveryStart);
+            if(deliveryStart > newDate){
+                this.setState({
+                    deliveryEnd: deliveryStart,
+                    deliveryStart: newDate
+                })
+                this.addToDeliveryDates(dates);                
+            } else {
+                this.setState({
+                    deliveryEnd: newDate
+                })
+                this.addToDeliveryDates.bind(this, getDates(deliveryStart, newDate));                
+            }
+        }
+
+    }
+
+    resetDeliveryDate = () => {
+        this.setState({
+            deliveryEnd: null,
+            deliveryStart: null
         })
     }
 
@@ -108,14 +135,15 @@ export class Calendar extends Component {
 
     render() {
         const {  dayNames, dayNamesFull, monthNames, monthNamesFull } = this.props;
-        const { month, year, firstOfMonth, daysInMonth, weekNumbers, startDay } = this.state;
+        const { month, year, firstOfMonth, daysInMonth, weekNumbers, startDay, deliveryStart, deliveryEnd } = this.state;
         return (
             <div className="r-calendar">
                 <div className="r-inner">
                     <CurrentDateHeader dayNamesFull={dayNamesFull} monthNamesFull={monthNamesFull}  />
                     <Header monthNames={monthNamesFull} month={month} year={year} onPrevious={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
                     <WeekDays dayNames={dayNames} startDay={startDay} weekNumbers={weekNumbers} />
-                    <MonthDates month={month} year={year} daysInMonth={daysInMonth} firstOfMonth={firstOfMonth} startDay={startDay} onSelect={this.selectDate} weekNumbers={weekNumbers} minDate={this.state.minDate} />
+                    <MonthDates addToDeliveryDates={this.addToDeliveryDates.bind(this)} deliveryStart={deliveryStart} deliveryEnd={deliveryEnd} selectDeliveryDate={this.selectDeliveryDate} month={month} year={year} daysInMonth={daysInMonth} firstOfMonth={firstOfMonth} startDay={startDay} onSelect={this.selectDate} weekNumbers={weekNumbers} minDate={this.state.minDate} />
+                    {(deliveryStart && deliveryEnd) && <button onClick={this.resetDeliveryDate.bind(this)} className='reset-button'>❌</button>}
                 </div>
             </div>
         );
@@ -132,11 +160,11 @@ Calendar.defaultProps = {
 export const Header = ({onNext, onPrevious, monthNames, year, month}) => {
     return(
         <div className="r-row r-head">
-            <button className="r-cell r-prev" onClick={onPrevious.bind(this)} />
+            <button className="r-cell r-prev nav-buttons" onClick={onPrevious.bind(this)} />
             <div className="r-cell r-title">
                 {monthNames[month]+' '+year}
             </div>
-            <button className="r-cell r-next" onClick={onNext.bind(this)} />
+            <button className="r-cell r-next nav-buttons" onClick={onNext.bind(this)} />
         </div>
     )
 }
