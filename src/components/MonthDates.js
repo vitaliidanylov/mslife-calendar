@@ -4,31 +4,6 @@ import '../css/styles.css';
 
 export class MonthDates extends Component {
 
-    constructor(props){
-        super(props)
-        this.addToDeliveryDates = this.props.addToDeliveryDates.bind(this)
-    }
-
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     // console.log(this.props);
-    //     const { deliveryStart, deliveryEnd, year, month } = this.props;
-    //     console.log(deliveryStart, deliveryEnd, year, month);
-    //     // return true;
-    //     if( nextProps.deliveryEnd != deliveryEnd || 
-    //         nextProps.deliveryStart != deliveryStart ||
-    //         nextProps.month != month ||
-    //         nextProps.year != year){                
-    //             if(nextProps.deliveryEnd, deliveryStart){
-    //                 const datesRange = getDates(deliveryStart, nextProps.deliveryEnd);
-    //                 this.addToDeliveryDates(datesRange);
-    //             }
-    //             return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-    
-
     render() {
         const { firstOfMonth, year, daysInMonth, month, selectDeliveryDate, deliveryStart, deliveryEnd,  } = this.props;
         let haystack,
@@ -69,7 +44,7 @@ export class MonthDates extends Component {
                                     } else {
                                         s = false;
                                     }
-                                    return <button onClick={selectDeliveryDate.bind(this, d)} key={item+i} className={s ? 'r-cell r-date blue':'r-cell r-date'}>{d}</button>
+                                    return <button onClick={selectDeliveryDate.bind(this,deliveryStart, deliveryEnd, year, month, d)} key={item+i} className={s ? 'r-cell r-date blue':'r-cell r-date'}>{d}</button>
                                 }
                                 return <button key={item+i} className='r-cell' />
                             })}

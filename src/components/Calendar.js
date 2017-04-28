@@ -14,46 +14,77 @@ export class Calendar extends Component {
             month: d.getMonth(),
             selectedYear: d.getFullYear(),
             selectedMonth: d.getMonth(),
-            selectedDt: new Date(d.getFullYear(), d.getMonth(), d.getDate()),
             startDay: 1,
             selectedDate: null,
             deliveryStart: null,
             deliveryEnd: null,
-            deliveryRange: null,
             firstOfMonth: null,
-            daysInMonth: null
+            daysInMonth: null,
+            deliveryRange: []
         }
     }
 
-    addToDeliveryDates = (newDates) =>{
-        console.log('BANG!');
-        this.setState({
-            deliveryRange: newDates
-        })
+    showState = () => {
+        console.log(this.state);
     }
 
-    selectDeliveryDate = (value) => {
-        const { deliveryStart, deliveryEnd, year, month } = this.state;
+    removeDayOfTheWeek = (numberOfTheWeek) => {
+        const { deliveryRange } = this.state;
+        if(deliveryRange.length > 0){
+            const newRange = []
+        }
+    }
+
+    selectDeliveryDate = (deliveryStart, deliveryEnd, year, month, d) => {
 
         if(!deliveryStart){
             this.setState({
-                deliveryStart: new Date(year, month, value),
+                deliveryStart: new Date(year, month, d),
             })
-        } else if (deliveryStart){
-            const newDate = new Date(year, month, value);
-            const dates = getDates(newDate, deliveryStart);
-            if(deliveryStart > newDate){
+        } else if (deliveryStart && !deliveryEnd){
+            const newDate = new Date(year, month, d);
+            console.log('newDate >>>',newDate);
+            if(deliveryStart.getTime() == newDate.getTime()){
+                const deliveryRange = getDates(deliveryStart, newDate);
                 this.setState({
-                    deliveryEnd: deliveryStart,
-                    deliveryStart: newDate
+                    deliveryEnd: newDate,
+                    deliveryRange
                 })
-                this.addToDeliveryDates(dates);                
-            } else {
-                this.setState({
-                    deliveryEnd: newDate
-                })
-                this.addToDeliveryDates.bind(this, getDates(deliveryStart, newDate));                
+                console.log(deliveryRange);                
             }
+            else if(deliveryStart.getTime() > newDate.getTime()){
+                const deliveryRange = getDates(newDate, deliveryStart);
+                this.setState({
+                    deliveryStart: newDate,
+                    deliveryEnd: deliveryStart,
+                    deliveryRange
+                })
+                console.log(deliveryRange);                
+            } else if(deliveryStart.getTime() < newDate.getTime()) {
+                const deliveryRange = getDates(deliveryStart, newDate);                
+                this.setState({
+                    deliveryEnd: newDate,
+                    deliveryRange
+                })
+                console.log(deliveryRange);
+            }
+        } else if (deliveryStart && deliveryEnd){
+            const newDate = new Date(year, month, d);
+            if(deliveryStart.getTime() <= deliveryEnd.getTime() && newDate.getTime() > deliveryEnd.getTime()){
+                const deliveryRange = getDates(deliveryStart, newDate);
+                this.setState({
+                    deliveryEnd: newDate,
+                    deliveryRange
+                })
+                console.log(deliveryRange);
+            } else if(deliveryStart.getTime() <= deliveryEnd.getTime() && newDate.getTime() < deliveryStart.getTime()){
+                const deliveryRange = getDates(newDate, deliveryEnd);
+                this.setState({
+                    deliveryStart: newDate,
+                    deliveryRange
+                })
+                console.log(deliveryRange);
+            } 
         }
 
     }
@@ -66,15 +97,6 @@ export class Calendar extends Component {
     }
 
     estimateDate = (year, month) => {
-        const { selectedElement, selectedMonth, selectedYear } = this.state;
-        if(selectedElement){
-            if(selectedMonth !== month || selectedYear !== year){
-                selectedElement.classList.remove('r-selected')
-            } else {
-                selectedElement.classList.add('r-selected')
-            }
-        }
-        
         return {
             firstOfMonth: new Date(year, month, 1),
             daysInMonth: new Date(year, month+1, 0).getDate()
@@ -84,12 +106,6 @@ export class Calendar extends Component {
     componentWillMount() {
         const { year, month } = this.state;
         this.setState({...this.estimateDate(year,month)})
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.onSelect && prevState.selectedDt !== this.state.selectedDt) {
-            this.props.onSelect.call(this.getDOMNode(), this.state);
-        }
     }
 
     getPrev(){
@@ -117,21 +133,6 @@ export class Calendar extends Component {
         }
         this.setState({...state, ...this.estimateDate.call(null, state.year, state.month)});
     }
-    
-    selectDate(year, month, date, element) {
-        const { selectedElement } = this.state;
-        if (selectedElement) {
-            selectedElement.classList.remove('r-selected');
-        }
-        element.target.classList.add('r-selected');
-        this.setState({
-            selectedYear: year,
-            selectedMonth: month,
-            selectedDate: date,
-            selectedDt: new Date(year, month, date),
-            selectedElement: element.target
-        });
-    }
 
     render() {
         const {  dayNames, dayNamesFull, monthNames, monthNamesFull } = this.props;
@@ -142,8 +143,9 @@ export class Calendar extends Component {
                     <CurrentDateHeader dayNamesFull={dayNamesFull} monthNamesFull={monthNamesFull}  />
                     <Header monthNames={monthNamesFull} month={month} year={year} onPrevious={this.getPrev.bind(this)} onNext={this.getNext.bind(this)}/>
                     <WeekDays dayNames={dayNames} startDay={startDay} weekNumbers={weekNumbers} />
-                    <MonthDates addToDeliveryDates={this.addToDeliveryDates.bind(this)} deliveryStart={deliveryStart} deliveryEnd={deliveryEnd} selectDeliveryDate={this.selectDeliveryDate} month={month} year={year} daysInMonth={daysInMonth} firstOfMonth={firstOfMonth} startDay={startDay} onSelect={this.selectDate} weekNumbers={weekNumbers} minDate={this.state.minDate} />
+                    <MonthDates deliveryStart={deliveryStart} deliveryEnd={deliveryEnd} selectDeliveryDate={this.selectDeliveryDate.bind(this)} month={month} year={year} daysInMonth={daysInMonth} firstOfMonth={firstOfMonth} startDay={startDay} weekNumbers={weekNumbers} minDate={this.state.minDate} />
                     {(deliveryStart && deliveryEnd) && <button onClick={this.resetDeliveryDate.bind(this)} className='reset-button'>❌</button>}
+                    <button onClick={this.showState}>showState</button>
                 </div>
             </div>
         );
@@ -152,7 +154,7 @@ export class Calendar extends Component {
 
 Calendar.defaultProps = {
     dayNames: ['Nz', 'Pn', 'Wt', 'Sr', 'Czw', 'Pt', 'Sob'],
-    dayNamesFull: ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'],
+    dayNamesFull: ['Niedziela','Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'],
     monthNames: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paż", "Lis", "Gru"],
     monthNamesFull: ['Styczeń', 'Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
 }
@@ -168,6 +170,7 @@ export const Header = ({onNext, onPrevious, monthNames, year, month}) => {
         </div>
     )
 }
+
 
 export const CurrentDateHeader = (props) => {
     const { dayNamesFull, monthNamesFull } = props;
